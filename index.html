@@ -39,7 +39,7 @@
     }
 
     main {
-      max-width: 42rem;
+      max-width: 56rem;
       margin: 0 auto;
       padding: 4.5rem 1.5rem 4rem;
     }
@@ -317,6 +317,36 @@
       90%, 100% { opacity: 0; }
     }
 
+    /* 7. Training scheduling: progress flattens, the schedule switches phase */
+    .field.wide {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 1.25rem;
+      align-items: center;
+    }
+    .field.wide svg { margin-bottom: 0; }
+    .ill-sched .mover {
+      offset-path: path('M8 12 C 22 34, 34 40, 60 41 C 68 41, 72 50, 112 51');
+      offset-rotate: 0deg;
+      fill: var(--s3);
+      animation: schedMove 5s linear infinite;
+    }
+    @keyframes schedMove {
+      0%   { offset-distance: 0%;   fill: var(--s3); opacity: 0; }
+      6%   { opacity: 1; }
+      55%  { offset-distance: 52%;  fill: var(--s3); }
+      60%  { offset-distance: 52%;  fill: var(--s5); }
+      92%  { offset-distance: 100%; fill: var(--s5); opacity: 1; }
+      100% { offset-distance: 100%; fill: var(--s5); opacity: 0; }
+    }
+    .ill-sched .switch { opacity: .25; animation: schedSwitch 5s ease-out infinite; }
+    @keyframes schedSwitch {
+      0%, 52%   { opacity: .25; stroke-width: 1.6; }
+      58%       { opacity: 1;   stroke-width: 2.6; }
+      75%, 100% { opacity: .45; stroke-width: 1.6; }
+    }
+
     /* Venue badge: a light sweep every few seconds */
     .venue { position: relative; overflow: hidden; vertical-align: middle; }
     .pub .note { vertical-align: middle; }
@@ -329,8 +359,13 @@
     }
     @keyframes sweep { 0% { left: -60%; } 30%, 100% { left: 130%; } }
 
+    @media (min-width: 880px) {
+      .fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
     @media (max-width: 560px) {
       .fields { grid-template-columns: 1fr; }
+      .field.wide { display: block; }
+      .field.wide svg { margin-bottom: .8rem; }
     }
 
 
@@ -447,7 +482,7 @@
       font-size: 1.125rem;
       color: var(--muted);
       margin: 0 0 1.25rem;
-      max-width: 34rem;
+      max-width: 50rem;
     }
     .role strong { color: var(--ink); font-weight: 500; }
 
@@ -475,6 +510,45 @@
     .affil > span { display: flex; flex-direction: column; line-height: 1.35; }
     .affil-name { font-weight: 600; }
     .affil-unit { font-size: .9rem; color: var(--muted); }
+
+    /* Advisor: small photo beside his name; hovering it shows the bio and links */
+    .role { position: relative; z-index: 30; }
+    .advisor { white-space: nowrap; }
+    .advisor-photo {
+      display: inline-block; width: 30px; height: 30px; margin: 0 .35rem 0 .1rem;
+      vertical-align: middle; position: relative; top: -2px;
+      border-radius: 50%; overflow: hidden; cursor: pointer; outline: none;
+      box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--badge);
+      transition: transform .3s ease, box-shadow .3s ease;
+    }
+    .advisor-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .advisor-photo:hover, .advisor-photo:focus-visible, .advisor.open .advisor-photo {
+      transform: scale(1.25); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--accent);
+    }
+    .advisor-pop {
+      position: absolute; top: calc(100% + .5rem); left: 0; z-index: 20;
+      width: min(21rem, calc(100vw - 3rem)); white-space: normal;
+      padding: 1rem 1.1rem .8rem; text-align: left;
+      background: #1B2F57;
+      border: 1px solid var(--rule); border-top: 3px solid var(--badge); border-radius: 10px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.45);
+      opacity: 0; visibility: hidden; transform: translateY(-6px);
+      transition: opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
+    }
+    .advisor-photo:hover ~ .advisor-pop, .advisor-pop:hover,
+    .advisor-photo:focus-visible ~ .advisor-pop, .advisor.open .advisor-pop {
+      opacity: 1; visibility: visible; transform: none;
+      transition: opacity .25s ease, transform .25s ease, visibility 0s;
+    }
+    .advisor-pop, .advisor-title, .advisor-bio { display: block; }
+    .advisor-title { font-size: .85rem; color: var(--accent); line-height: 1.4; margin-bottom: .5rem; }
+    .advisor-bio { font-size: .85rem; color: var(--muted); line-height: 1.5; }
+    .advisor-links { display: flex; gap: .3rem; margin-top: .6rem; }
+    .advisor-links a {
+      display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+      color: var(--muted); text-decoration: none; transition: color .2s, background .2s;
+    }
+    .advisor-links a:hover { color: var(--accent); background: rgba(224,132,151,.12); }
 
     nav.links {
       display: flex;
@@ -613,7 +687,24 @@
     </div>
     <p class="role fade-in">
       Master's student in <strong>Data Science &amp; Engineering</strong>,
-      advised by <a href="https://avigal.dds.technion.ac.il/">Prof. Avigdor Gal</a>.
+      <span class="advisor">advised by
+        <span class="advisor-photo" tabindex="0" role="button" aria-label="About Prof. Avigdor Gal" aria-expanded="false"><img src="data:image/webp;base64,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" alt="" width="30" height="30"></span><a class="advisor-name" href="https://avigal.dds.technion.ac.il/">Prof. Avigdor Gal</a>.
+        <span class="advisor-pop" role="tooltip">
+          <span class="advisor-title">Benjamin and Florence Free Chaired Professor of Data Science, Technion</span>
+          <span class="advisor-bio">
+            Prof. Gal's research focuses on effective methods of integrating data from multiple and
+            diverse sources under conditions of uncertainty. With close to 200 publications in leading
+            journals and conferences in the areas of databases and AI, he is a recipient of multiple
+            best paper and test of time awards.
+          </span>
+          <span class="advisor-links">
+            <a href="https://avigal.dds.technion.ac.il/" aria-label="Website" title="Website"><i class="fa-solid fa-globe" aria-hidden="true"></i></a>
+            <a href="https://scholar.google.com/citations?user=APs1p2oAAAAJ&hl=en" aria-label="Google Scholar" title="Google Scholar"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></a>
+            <a href="https://www.linkedin.com/in/avi-avigdor-gal-432a49/" aria-label="LinkedIn" title="LinkedIn"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></a>
+            <a href="mailto:avigal@technion.ac.il" aria-label="Email" title="Email"><i class="fa-regular fa-envelope" aria-hidden="true"></i></a>
+          </span>
+        </span>
+      </span>
     </p>
     <a class="affil fade-in" href="https://dds.technion.ac.il/">
       <img src="data:image/png;base64,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" alt="Technion logo" width="26" height="40">
@@ -634,18 +725,20 @@
     </nav>
   </header>
 
+
   <section id="about" class="reveal">
     <h2>About</h2>
     <p>
       My research focuses on learning and evaluation with ordinal supervision, where labels
       carry an inherent order, as in ratings, severity grades, and quality scores. Standard
-      methods often ignore this structure. I develop training objectives and representation
-      learning methods, particularly for contrastive learning, that preserve it. I also
-      design statistical tests for assessing whether large language models can serve as
-      reliable judges and annotators.
-    </p>
-    <p>
-      I am also interested in data-efficient learning, particularly active learning.
+      methods often ignore this structure, so I develop training objectives and representation
+      learning methods, particularly for contrastive learning, that preserve it. A related
+      thread is training scheduling: using signals from the training dynamics to decide when
+      to switch between training phases, whether between encoder and classifier training in
+      ordinal contrastive learning or between retraining and fine-tuning in active learning.
+      On the evaluation side, I design statistical tests for assessing whether large language
+      models can serve as reliable judges and annotators, including whether they order items
+      as humans do.
     </p>
   </section>
 
@@ -681,6 +774,19 @@
         </svg>
         <h3>Representation learning</h3>
         <p>Learning representations that capture the structure of the data and labels.</p>
+      </article>
+
+      <article class="field reveal">
+        <svg class="ill-sched" viewBox="0 0 120 64" aria-hidden="true">
+          <rect x="8"  y="6" width="52" height="50" rx="3" fill="var(--s2)" opacity=".28"/>
+          <rect x="60" y="6" width="52" height="50" rx="3" fill="var(--s5)" opacity=".16"/>
+          <line x1="8" y1="56" x2="112" y2="56" stroke="var(--rule)" stroke-width="2"/>
+          <path d="M8 12 C 22 34, 34 40, 60 41 C 68 41, 72 50, 112 51" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round"/>
+          <line class="switch" x1="60" y1="6" x2="60" y2="56" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="3 3"/>
+          <circle class="mover" r="4.5" cx="0" cy="0"/>
+        </svg>
+        <h3>Training scheduling</h3>
+        <p>Using signals from the training dynamics to decide when to switch between training phases.</p>
       </article>
 
       <article class="field reveal">
@@ -720,21 +826,8 @@
             </g>
           </g>
         </svg>
-        <h3>LLMs as judges</h3>
-        <p>Assessing when large language models can be trusted to evaluate and rank model outputs.</p>
-      </article>
-
-      <article class="field reveal">
-        <svg class="ill-ann" viewBox="0 0 120 64" aria-hidden="true">
-          <rect x="8" y="8"  width="58" height="8" rx="3" fill="var(--rule)"/>
-          <rect x="8" y="28" width="46" height="8" rx="3" fill="var(--rule)"/>
-          <rect x="8" y="48" width="52" height="8" rx="3" fill="var(--rule)"/>
-          <g class="tag" style="--dl:0s"><rect x="76" y="5" width="34" height="14" rx="7" fill="var(--s3)"/><path d="M84 12 l3 3 l6 -6" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="101" cy="12" r="2.2" fill="var(--ink)"/></g>
-          <g class="tag" style="--dl:.8s"><rect x="76" y="25" width="34" height="14" rx="7" fill="var(--s5)"/><path d="M84 32 l3 3 l6 -6" fill="none" stroke="var(--paper)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="101" cy="32" r="2.2" fill="var(--paper)"/></g>
-          <g class="tag" style="--dl:1.6s"><rect x="76" y="45" width="34" height="14" rx="7" fill="var(--s4)"/><path d="M84 52 l3 3 l6 -6" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="101" cy="52" r="2.2" fill="var(--ink)"/></g>
-        </svg>
-        <h3>LLMs as annotators</h3>
-        <p>Using large language models to label data, and testing when their labels can stand in for human ones.</p>
+        <h3>LLMs as judges and annotators</h3>
+        <p>Testing when large language models can be trusted to evaluate outputs and label data in place of human annotators.</p>
       </article>
 
       <article class="field reveal">
@@ -771,6 +864,33 @@
 
   <section id="publications" class="reveal">
     <h2>Publications</h2>
+
+    <article class="pub reveal">
+      <p class="title">AltRA-Test: An Alternative Annotator Test for LLM Judges Without Shared Annotators</p>
+      <p class="authors"><b>Nagham Omar</b>, Rotem Dror, Almog Gueta, Avigdor Gal, Roi Reichart, Nitay Calderon</p>
+      <span class="venue pending">Preprint</span>
+      <span class="note">arXiv 2026</span>
+      <div class="actions">
+        <button class="abs-toggle" type="button" aria-expanded="false" aria-controls="abs-altra">Abstract</button>
+        <a href="https://naghamo.github.io/altra-test.io/"><i class="fa-solid fa-globe" aria-hidden="true"></i>Paper page</a>
+        <a href="https://arxiv.org/abs/2611.26073"><i class="fa-regular fa-file-lines" aria-hidden="true"></i>Paper</a>
+        <a href="https://huggingface.co/datasets/naghamo/altra-test"><i class="fa-solid fa-database" aria-hidden="true"></i>Code &amp; Data</a>
+      </div>
+      <div class="abstract" id="abs-altra">
+        <div>
+          <p>
+            We introduce AltRA-Test, a statistical test for deciding whether an LLM judge can
+            replace human annotators when items are not all labeled by the same annotators.
+            The test swaps one of three human annotations per item for the LLM's annotation and
+            checks whether inter-annotator agreement stays as high as among the humans alone,
+            often needing only about 100 items. In simulations it makes more correct replacement
+            decisions than existing baselines, and across 18 LLMs, 5 prompting techniques and
+            20 datasets spanning text, image, audio and video, LLMs pass in about half of the
+            setups, depending mainly on the task.
+          </p>
+        </div>
+      </div>
+    </article>
 
     <article class="pub reveal">
       <p class="title">Train Smarter, Not Harder: Switching Signal-Guided Training in Active Learning</p>
@@ -847,21 +967,6 @@
     </article>
   </section>
 
-  <section id="contact" class="reveal">
-    <h2>Let's chat</h2>
-    <div class="chat">
-      <p>
-        I'm always happy to talk about ordinal learning, LLM evaluation, active learning,
-        or possible collaborations. If you're working on something related, or just want
-        to exchange ideas, feel free to reach out.
-      </p>
-      <a class="chat-btn" href="mailto:nagham.technion@gmail.com">
-        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-        <span>Send me an email</span>
-      </a>
-      <p class="chat-addr">nagham.technion@gmail.com</p>
-    </div>
-  </section>
 
 </main>
 
@@ -910,7 +1015,7 @@
   (function () {
     var el = document.querySelector('.rotator');
     if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var words = ['ordinal supervision', 'representation learning', 'large language models', 'LLMs as judges', 'LLMs as annotators', 'active learning'];
+    var words = ['ordinal supervision', 'representation learning', 'large language models', 'LLMs as judges and annotators', 'active learning', 'training scheduling'];
     var i = 0;
     setInterval(function () {
       el.classList.add('out');
@@ -995,6 +1100,21 @@
       box.classList.toggle('open', !open);
     });
   });
+
+  // Advisor bio: hover on desktop, tap on phones
+  (function () {
+    var box = document.querySelector('.advisor');
+    if (!box) return;
+    var photo = box.querySelector('.advisor-photo');
+    photo.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = box.classList.toggle('open');
+      photo.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function (e) {
+      if (!box.contains(e.target)) { box.classList.remove('open'); photo.setAttribute('aria-expanded', 'false'); }
+    });
+  })();
 </script>
 </body>
 </html>
